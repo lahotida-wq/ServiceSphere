@@ -1,14 +1,19 @@
 # ServiceSphere/backend/Dockerfile
 
-# Stage 1: Build karo Maven se
 FROM maven:3.9.6-eclipse-temurin-21 AS builder
 WORKDIR /app
+
+# Copy pom.xml first for dependency caching
 COPY pom.xml .
 RUN mvn dependency:go-offline -B
+
+# Copy source code
 COPY src ./src
+
+# Build the application
 RUN mvn clean package -DskipTests -B
 
-# Stage 2: Sirf JAR run karo — lightweight image
+# Runtime stage
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=builder /app/target/servicesphere-backend.jar app.jar
